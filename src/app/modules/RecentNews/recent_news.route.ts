@@ -27,6 +27,9 @@ route.patch('/change-news-status' , checkAuth , isAdmin , RecentNewsController.t
 
 route.patch('/latest-news-add-from-news' , checkAuth , isAdmin , RecentNewsController.customWiseBreakingNewsAdd)
 
+
+
+
 route.get('/allFeaturednews' , checkAuth, isAdmin ,RecentNewsController.allBreakingNews)
 export const NewsRoute = route
 
