@@ -281,17 +281,16 @@ const checkBreakingNewsIntoDB = async () => {
 
 
 const toggleBreakingNewsStatus = async (newsId: string) => {
-    const news = await BreakingNews.findById(newsId);
+
+    const news = await BreakingNews.findOne({ newsId: Number(newsId) });
+
+
 
     if (!news) {
         throw new AppError(status.NOT_FOUND, "News not found!");
     }
-
-
-
-
-    const updated = await BreakingNews.findByIdAndUpdate(
-        newsId,
+    const updated = await BreakingNews.findOneAndUpdate(
+        { newsId: Number(newsId) },
         {
             $set: {
                 isBreaking: !news.isBreaking,
@@ -299,8 +298,6 @@ const toggleBreakingNewsStatus = async (newsId: string) => {
         },
         { returnDocument: 'after' }
     );
-
-
     const message = !updated?.isBreaking
         ? "Removed from latest news"
         : "Added to latest news";
@@ -386,10 +383,12 @@ const adminNewsService = async (query: Record<string, string>) => {
 const customWiseBreakingNewsAdd = async (newsId: number) => {
 
 
+
     const ckNews = await News.findOne({ id: newsId })
     if (!ckNews) {
         throw new AppError(status.NOT_FOUND, 'News not found!')
     }
+    console.log(ckNews)
 
 
     const findFromBrekingsNews = await BreakingNews.findOne({ newsId: newsId })
@@ -412,7 +411,6 @@ const customWiseBreakingNewsAdd = async (newsId: number) => {
 
 
 
-
     const updatedBreakingNews = await BreakingNews.findOneAndUpdate({ newsId: newsId }, {
         $set: {
             isBreaking: !findFromBrekingsNews?.isBreaking
@@ -421,7 +419,7 @@ const customWiseBreakingNewsAdd = async (newsId: number) => {
     }, { returnDocument: 'after' })
 
 
-    const updateNews = await News.findByIdAndUpdate({ _id: ckNews._id }, {
+    await News.findByIdAndUpdate({ _id: ckNews._id }, {
         $set: {
             isBreaking: updatedBreakingNews?.isBreaking
         }
@@ -445,7 +443,7 @@ const allBreakingNews = async (query: Record<string, any>) => {
         result.getMeta()
     ]);
     return {
-        data , meta
+        data, meta
     }
 
 }

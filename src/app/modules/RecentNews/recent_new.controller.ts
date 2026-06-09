@@ -94,6 +94,7 @@ const toggleBreakingNewsStatus = catchAsync(async (req: Request, res: Response, 
   if (!newsId) {
     throw new AppError(statusCode.NOT_FOUND, 'News Id not found!')
   }
+
   const msg = await RecentNewsService.toggleBreakingNewsStatus(newsId)
 
   sendResponse(res, {
@@ -108,10 +109,13 @@ const toggleBreakingNewsStatus = catchAsync(async (req: Request, res: Response, 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const customWiseBreakingNewsAdd = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
+
   const newsId = Number(req.query.newsId) as number
+
   if (!newsId) {
     throw new AppError(statusCode.NOT_FOUND, 'News Id not found!')
   }
+
   const msg = await RecentNewsService.customWiseBreakingNewsAdd(newsId)
 
   sendResponse(res, {
@@ -126,6 +130,7 @@ const customWiseBreakingNewsAdd = catchAsync(async (req: Request, res: Response,
 const allBreakingNews = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
   const query = req.query
+
   const data = await RecentNewsService.allBreakingNews(query as Record<string, any>)
 
   sendResponse(res, {
