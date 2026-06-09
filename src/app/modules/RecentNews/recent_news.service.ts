@@ -14,6 +14,7 @@ import AppError from "../../ErrorHelper/AppError";
 import status from 'http-status-codes'
 import { User } from "../User/user.model";
 import { QueryBuilder } from "../../utils/QuiryBuilder";
+import { InstallEnum, installUninstallCreateUpdate } from "../InstallUninstall/installUninstall.service";
 
 
 
@@ -282,8 +283,8 @@ const checkBreakingNewsIntoDB = async () => {
 
 const toggleBreakingNewsStatus = async (newsId: string) => {
 
-    const news = await BreakingNews.findOne({ newsId: Number(newsId) });
 
+    const news = await BreakingNews.findOne({ newsId: Number(newsId) });
 
 
     if (!news) {
@@ -516,7 +517,10 @@ cron.schedule("0 9 * * *", async () => {
         const latestnews = newlyAddedNews[0]
 
         for (const user of inactiveUsers) {
-            await sendSingleNotification(user.fcmToken as string, latestnews.title, latestnews.image, latestnews.link);
+            const ans = await sendSingleNotification(user.fcmToken as string, latestnews.title, latestnews.image, latestnews.link);
+            if (ans.response) {
+                await installUninstallCreateUpdate(user._id, InstallEnum.UNINSTALL)
+            }
         }
 
         // eslint-disable-next-line no-console
