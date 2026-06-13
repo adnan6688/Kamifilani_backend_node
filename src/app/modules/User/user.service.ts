@@ -383,6 +383,8 @@ cron.schedule('0 7 * * *', async () => {
     const currentMonth = today.getMonth() + 1
     const currentDate = today.getDate()
 
+const bithdayMessage = await Admob.find()
+const message = bithdayMessage[0].birthDay || ''
 
     try {
 
@@ -396,14 +398,14 @@ cron.schedule('0 7 * * *', async () => {
             if (birthMonth === currentMonth && birthDay === currentDate) {
 
                 if (user.fcmToken && user?.image) {
-                    const ans = await sendSingleNotification(user.fcmToken, "🎉 Happy Birthday!", `Happy Birthday ${user.name} ❤️`, user.image)
+                    const ans = await sendSingleNotification(user.fcmToken, "🎉 Happy Birthday!", `🎉 Happy Birthday ${user.name} ❤️ ${message}`, user.image)
                     if (!ans.success) {
                         await installUninstallService.installUninstallCreateUpdate(user?._id, InstallEnum.UNINSTALL)
 
                     }
                 }
                 if (user.fcmToken && !user?.image) {
-                    const ans = await sendSingleNotification(user.fcmToken, "🎉 Happy Birthday!", `Happy Birthday ${user.name} ❤️`)
+                    const ans = await sendSingleNotification(user.fcmToken, "🎉 Happy Birthday!", `🎉 Happy Birthday ${user.name} ❤️ ${message}`)
                     if (!ans.success) {
                         await installUninstallService.installUninstallCreateUpdate(user?._id, InstallEnum.UNINSTALL)
                     }

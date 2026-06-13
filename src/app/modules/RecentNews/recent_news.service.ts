@@ -233,25 +233,77 @@ type BreakingNewsDTO = {
 };
 
 const checkBreakingNewsIntoDB = async () => {
-    const res = await fetch(
-        "https://www.kemifilani.ng/wp-json/wp/v2/posts?_fields=id,title,link,date,featured_media&per_page=5"
-    );
+    const url =
+        "https://www.kemifilani.ng/wp-json/wp/v2/posts?_fields=id,title,link,date,featured_media&per_page=5";
 
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "User-Agent": "Kemifilani-News-Bot/1.0",
+            "Accept": "application/json",
+        },
+        signal: AbortSignal.timeout(10000),
+    });
+
+    // HTTP Error check
+    if (!res.ok) {
+        const errorBody = await res.text();
+
+        console.error("Breaking News API Error:", {
+            status: res.status,
+            statusText: res.statusText,
+            response: errorBody.slice(0, 500),
+        });
+
+        throw new Error(
+            `News API failed with status ${res.status}`
+        );
+    }
+
+    // Content-Type check
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType || !contentType.includes("application/json")) {
+        const body = await res.text();
+
+        console.error("Invalid API Response:", {
+            contentType,
+            body: body.slice(0, 500),
+        });
+
+        throw new Error("API did not return JSON");
+    }
+
+    // JSON parse
     const data = (await res.json()) as NewsItem[];
 
+    // Add image data
     const enrichedData = await Promise.all(
         data.map(async (item) => {
-            const image = await getImage(item.featured_media);
+            try {
+                const image = await getImage(item.featured_media);
 
-            return {
-                ...item,
-                image,
-            };
+                return {
+                    ...item,
+                    image,
+                };
+            } catch (error) {
+                console.error(
+                    `Failed to get image for post ${item.id}:`,
+                    error
+                );
+
+                return {
+                    ...item,
+                    image: "",
+                };
+            }
         })
     );
 
     const newlyAddedNews: BreakingNewsDTO[] = [];
 
+    // Save new news
     for (const item of enrichedData) {
         const exists = await BreakingNews.findOne({
             newsId: Number(item.id),
@@ -266,11 +318,16 @@ const checkBreakingNewsIntoDB = async () => {
                 date: item.date,
             });
 
-            newlyAddedNews.push(savedNews.toObject() as BreakingNewsDTO);
+            newlyAddedNews.push(
+                savedNews.toObject() as BreakingNewsDTO
+            );
         }
     }
 
-    const allNews = await BreakingNews.find({ isBreaking: true })
+    // Get latest breaking news
+    const allNews = await BreakingNews.find({
+        isBreaking: true,
+    })
         .sort({ createdAt: -1 })
         .limit(20);
 
@@ -496,11 +553,19 @@ const allBreakingNews = async (query: Record<string, any>) => {
 
 cron.schedule("0 9 * * *", async () => {
     try {
+        console.log("Breaking news cron started");
+
         const result = await checkBreakingNewsIntoDB();
+
+        if (!result || !result.newlyAddedNews) {
+            console.log("No result returned from news checker");
+            return;
+        }
+
         const { newlyAddedNews } = result;
 
-        if (!newlyAddedNews.length) {
-            console.log("No new news");
+        if (newlyAddedNews.length === 0) {
+            console.log("No new news found");
             return;
         }
 
@@ -510,29 +575,52 @@ cron.schedule("0 9 * * *", async () => {
 
         const inactiveUsers = await User.find({
             isDelete: false,
-            fcmToken: { $ne: "" },
-            lastActiveAt: { $lt: THREE_DAYS_AGO }
+            fcmToken: {
+                $exists: true,
+                $ne: ""
+            },
+            lastActiveAt: {
+                $lt: THREE_DAYS_AGO
+            }
         });
 
-        const latestnews = newlyAddedNews[0]
+        const latestNews = newlyAddedNews[0];
 
         for (const user of inactiveUsers) {
-            const ans = await sendSingleNotification(user.fcmToken as string, latestnews.title, latestnews.image, latestnews.link);
-            if (ans.response) {
-                await installUninstallCreateUpdate(user._id, InstallEnum.UNINSTALL)
+            try {
+                const response = await sendSingleNotification(
+                    user.fcmToken as string,
+                    latestNews.title,
+                    latestNews.image,
+                    latestNews.link
+                );
+
+                if (!response?.response) {
+                    await installUninstallCreateUpdate(
+                        user._id,
+                        InstallEnum.UNINSTALL
+                    );
+                }
+            } catch (notificationError) {
+                console.error(
+                    `Notification failed for user ${user._id}`,
+                    notificationError
+                );
             }
         }
 
-        // eslint-disable-next-line no-console
         console.log(
             `Sent notifications to ${inactiveUsers.length} inactive users`
         );
+
     } catch (error) {
-        console.error(error);
+        console.error("Breaking news cron failed:", error);
     }
-}, {
-    timezone: "Africa/Lagos",
-});
+},
+    {
+        timezone: "Africa/Lagos",
+    }
+);
 
 
 export const RecentNewsService = {
