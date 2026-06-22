@@ -6,6 +6,8 @@ import { BannarService } from "./bannar.service";
 import { sendResponse } from "../../utils/SendResponse";
 import statusCode from 'http-status-codes'
 import mongoose from "mongoose";
+import { Bannar } from "./banner.model";
+import AppError from "../../ErrorHelper/AppError";
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -66,7 +68,7 @@ const deleteBannar = catchAsync(async (req: Request, res: Response, next: NextFu
 
     sendResponse(res, {
 
-        
+
         success: true,
         message: 'Bannar Deleted!',
         statusCode: statusCode.OK
@@ -108,10 +110,44 @@ const adminBannars = catchAsync(async (req: Request, res: Response, next: NextFu
     })
 })
 
+
+
+const updateBannerStats = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { type } = req.query;
+    if (!id) {
+        throw new AppError(400, "Banner id is required")
+    }
+    if (type !== "click" && type !== "impression") {
+        throw new AppError(400, "type must be click or impression")
+    }
+    const updateField =
+        type === "click"
+            ? { click: 1 }
+            : { impressions: 1 };
+    const ckBannar = await Bannar.findById(id)
+    if (!ckBannar) {
+        throw new AppError(404, "Banner not found")
+    }
+    const banner = await Bannar.findByIdAndUpdate(
+        id,
+        { $inc: updateField },
+        { returnDocument: 'after' }
+    );
+    sendResponse(res, {
+        success: true,
+        message: `${type} updated successfully`,
+        data: banner,
+        statusCode: statusCode.OK
+    })
+})
+
+
 export const bannerController = {
     bannerCreate,
     getBannars,
     deleteBannar,
     recenAddedBannar,
-    adminBannars
+    adminBannars,
+    updateBannerStats
 }
