@@ -16,9 +16,10 @@ route.delete('/delete-bannar/:bannarId', checkAuth, isAdmin, bannerController.de
 
 
 route.get('/recenAddedBannar', checkAuth, isAdmin, bannerController.recenAddedBannar)
+
 route.get('/adminBannars', checkAuth, isAdmin, bannerController.adminBannars)
 
-route.get('/bannar-actions' , checkAuth , bannerController.updateBannerStats)
+route.get('/bannar-actions/:id' , checkAuth , bannerController.updateBannerStats)
 
 
 

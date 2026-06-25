@@ -143,6 +143,8 @@ const updateBannerStats = catchAsync(async (req: Request, res: Response, next: N
 })
 
 
+
+
 export const bannerController = {
     bannerCreate,
     getBannars,
