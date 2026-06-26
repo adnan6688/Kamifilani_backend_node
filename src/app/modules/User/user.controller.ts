@@ -7,6 +7,9 @@ import { createUserTokens } from "../../utils/createTokens";
 import { Types } from "mongoose";
 import sharp from "sharp";
 import { uploadToCloudinary } from "../../config/multer.config";
+import { User } from "./user.model";
+import AppError from "../../ErrorHelper/AppError";
+import { UserType } from "./user.interface";
 
 
 
@@ -239,6 +242,38 @@ const logoutuser = catchAsync(async (req: Request, res: Response, next: NextFunc
 }
 );
 
+
+
+const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params
+
+    const ckUser = await User.findById(userId)
+    if (!ckUser) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Úser not found!')
+    }
+
+    await User.findByIdAndUpdate(userId, {
+        $set: {
+            name: 'Anonymous User',
+            email: `guest_${Date.now()}_${Math.random()}.temp@system.com`,
+            deviceId: null,
+            role: UserType.GUEST,
+            birth_date: null,
+            fcmToken: null,
+            image: null
+        }
+    })
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'User Deleted Successfully!',
+
+    })
+
+})
+
+
 export const userController = {
     userCreate,
     loginController,
@@ -246,5 +281,5 @@ export const userController = {
     updateUserInformation,
     adminInformationForDashboard,
     userAnalytics,
-    recentUsers, topusers, getAllUsersService, logoutuser
+    recentUsers, topusers, getAllUsersService, logoutuser, deleteUser
 }

@@ -39,4 +39,7 @@ route.get('/get-all-users', checkAuth, isAdmin, userController.getAllUsersServic
 
 route.post('/logout' , userController.logoutuser)
 
+
+
+route.delete('/deleteuser/:userId' , checkAuth , isAdmin , userController.deleteUser)
 export const UserRoutes = route
