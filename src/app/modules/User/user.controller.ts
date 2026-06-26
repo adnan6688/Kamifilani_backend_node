@@ -251,6 +251,13 @@ const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     if (!ckUser) {
         throw new AppError(httpStatus.NOT_FOUND, 'Úser not found!')
     }
+    if (ckUser.role === UserType.GUEST) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Guest users cannot be deleted.'
+        );
+    }
+
 
     await User.findByIdAndUpdate(userId, {
         $set: {
@@ -260,7 +267,8 @@ const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunc
             role: UserType.GUEST,
             birth_date: null,
             fcmToken: null,
-            image: null
+            image: null,
+            isDelete: true
         }
     })
 

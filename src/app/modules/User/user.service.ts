@@ -262,6 +262,13 @@ const getAllUsersService = async (page: number = 1, limit: number = 10, search?:
         matchStage.role = role;
     }
 
+
+    matchStage.isDelete = false;
+
+    matchStage.email = {
+        $ne: envVars.ADMIN_EMAIL
+    };
+
     if (search) {
         matchStage.$or = [
             { name: { $regex: search, $options: "i" } },
@@ -383,8 +390,8 @@ cron.schedule('0 7 * * *', async () => {
     const currentMonth = today.getMonth() + 1
     const currentDate = today.getDate()
 
-const bithdayMessage = await Admob.find()
-const message = bithdayMessage[0].birthDay || ''
+    const bithdayMessage = await Admob.find()
+    const message = bithdayMessage[0].birthDay || ''
 
     try {
 
@@ -419,7 +426,7 @@ const message = bithdayMessage[0].birthDay || ''
         console.log(err)
     }
 
-    
+
 }, {
     timezone: "Africa/Lagos"
 })

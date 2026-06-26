@@ -90,6 +90,9 @@ export const checkAuth = async (req: Request, res: Response, next: NextFunction)
             return next();
         }
 
+        if (user?.isDelete) {
+            throw new AppError(statusCode.BAD_REQUEST, 'User not found!')
+        }
         req.user = {
             id: user._id,
             role: user.role,
