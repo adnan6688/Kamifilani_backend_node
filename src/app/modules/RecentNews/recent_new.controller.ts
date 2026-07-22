@@ -95,6 +95,7 @@ const toggleBreakingNewsStatus = catchAsync(async (req: Request, res: Response, 
     throw new AppError(statusCode.NOT_FOUND, 'News Id not found!')
   }
 
+
   const msg = await RecentNewsService.toggleBreakingNewsStatus(newsId)
 
   sendResponse(res, {
