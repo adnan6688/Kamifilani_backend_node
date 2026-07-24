@@ -25,7 +25,7 @@ route.get('/change-news-status' , checkAuth , isAdmin , RecentNewsController.tog
 
 
 
-route.patch('/latest-news-add-from-news' , checkAuth , isAdmin , RecentNewsController.customWiseBreakingNewsAdd)
+route.get('/latest-news-add-from-news' , checkAuth , isAdmin , RecentNewsController.customWiseBreakingNewsAdd)
 
 
 
