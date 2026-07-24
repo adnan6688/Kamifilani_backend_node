@@ -5,17 +5,27 @@ import { Request, Response, NextFunction } from "express";
 import { router } from "./routes/route";
 import { limiter } from "./utils/rateLimiting";
 import { globalErrorHandler } from "./Middleware/global.error.handler";
-import cookieParser from 'cookie-parser'
+import cookieParser from "cookie-parser";
 export const app = express();
 
-app.use(
-  cors({
-    origin: ["https://admin.kemifilani.ng", "http://localhost:5173"],
-    credentials: true,
-  })
-);
-app.use(express.json());
+// app.use(
+//   cors({
+//     origin: ["https://admin.kemifilani.ng", "http://localhost:5173"],
+//     credentials: true,
+//   })
+// );
 
+const corsOptions = {
+  origin: ["https://admin.kemifilani.ng", "http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  credentials: true,
+};
+
+// Enable CORS for all routes
+app.use(cors(corsOptions));
+
+app.use(express.json());
 
 app.use(cookieParser());
 app.set("trust proxy", 1);
