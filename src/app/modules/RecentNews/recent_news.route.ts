@@ -21,7 +21,7 @@ route.get('/breaking-news', checkAuth, RecentNewsController.checkBreakingNewsInt
 route.get('/admin_all_news', checkAuth, isAdmin, RecentNewsController.adminNewsService)
 
 
-route.patch('/change-news-status' , checkAuth , isAdmin , RecentNewsController.toggleBreakingNewsStatus)
+route.get('/change-news-status' , checkAuth , isAdmin , RecentNewsController.toggleBreakingNewsStatus)
 
 
 
