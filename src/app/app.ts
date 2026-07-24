@@ -12,7 +12,7 @@ export const app = express();
 const corsOptions = {
   origin: ["https://admin.kemifilani.ng", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin"],
   credentials: true,
 };
 
@@ -22,9 +22,18 @@ app.use(cors(corsOptions));
 // 2. Explicitly handle Preflight OPTIONS requests for all routes without wildcard route path
 app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Origin", req.headers.origin || "https://admin.kemifilani.ng");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.header(
+      "Access-Control-Allow-Origin",
+      req.headers.origin || "https://admin.kemifilani.ng",
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With",
+    );
     res.header("Access-Control-Allow-Credentials", "true");
     return res.sendStatus(204);
   }
